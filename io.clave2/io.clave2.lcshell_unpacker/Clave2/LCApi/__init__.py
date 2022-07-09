@@ -4,8 +4,8 @@ import hmac
 import struct
 
 import hid
-from ..LCDevice.constants import *
-from ..LCDevice import LCDevice
+from LCDevice import LCDevice
+from LCDevice.constants import *
 
 class LCApi:
     def __init__(self, developer_id=0, index=0):
