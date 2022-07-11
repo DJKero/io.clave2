@@ -4,8 +4,8 @@ import hmac
 import struct
 
 import hid
-from LCDevice import LCDevice
-from LCDevice.constants import *
+from ..LCDevice import LCDevice
+from ..LCDevice.constants import *
 
 class LCApi:
     def __init__(self, developer_id=0, index=0):
@@ -22,7 +22,7 @@ class LCApi:
         for entry in devices:
             d = hid.Device(path=entry['path'])
             if developer_id != 0:
-                if d.serial.startswith(developer_id):
+                if d.serial.startswith(str(developer_id)):
                     device_list.append(d)
             else:
                 device_list.append(d)
