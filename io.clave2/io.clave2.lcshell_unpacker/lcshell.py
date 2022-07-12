@@ -38,7 +38,7 @@ class LC_Enveloped_EXE(object):
         self.valid = False
         self.pe = pefile.PE(path_to_exe)
         self.exe_key = exe_key
-        if self._read_packer_section() is False:
+        if self._read_packer_section() == False:
             return
 
         self.valid = True
@@ -77,21 +77,21 @@ class LC_Enveloped_EXE(object):
                 print("EXE Pre Key: %s" % binascii.hexlify(self.exe_pre_key))
                 
                 # If the EXE key is given, we don't need to ask the dongle for it.
-                if self.exe_key is b"":
+                if self.exe_key == b"":
                     d = LCApi.LCApi(developer_id=self.lc_developer_id)
-                    if not d.login(self.lc_password, 1):
+                    if not d.login(1, self.lc_password):
                         print("Clave2 Login Failed!")
                         return False
                     status, self.exe_key = d.encrypt(self.exe_pre_key)
                     d.logout()
-                    if status is True:
+                    if status == True:
                         self.valid = True
                     else:
                         print("LC_Encrypt Fail!")
                         return False
 
                 # If everything is good so far, might as well decrypt and parse the IAT Blob
-                if self.parse_iat_blob(rijndael_decrypt(self.exe_key,encrypted_iat_blob),ib_rva) is False:
+                if self.parse_iat_blob(rijndael_decrypt(self.exe_key,encrypted_iat_blob),ib_rva) == False:
                     print("Parse IAT Blob Fail!")
                     return False
 
@@ -113,7 +113,7 @@ class LC_Enveloped_EXE(object):
         end_lib_entries = False
         self.import_db = []
         offset = 0
-        while end_lib_entries is False:
+        while end_lib_entries == False:
             offset_lib_name = struct.unpack("<I", data[offset + 12:offset + 16])[0]
             offset_func_table = struct.unpack("<I", data[offset + 16:offset + 20])[0]
 
@@ -130,11 +130,11 @@ class LC_Enveloped_EXE(object):
 
             offset_func_table_offset = 0
             end_func_entries = False
-            while end_func_entries is False:
+            while end_func_entries == False:
                 f_offset = struct.unpack("<I", data[
                                                offset_func_table_offset + offset_func_table:offset_func_table_offset + offset_func_table + 4])[
                     0]
-                if (f_offset is 0):
+                if (f_offset == 0):
                     end_func_entries = True
                     break
                 func_ordinal = 0
@@ -162,7 +162,7 @@ class LC_Enveloped_EXE(object):
         print("Decrypting CODE Sections...")
         for i in range(0, len(self.pe.sections)):
             if not LCSH_SECTION_NAME in self.pe.sections[i].Name:
-                if self.pe.sections[i].IMAGE_SCN_MEM_EXECUTE is True:
+                if self.pe.sections[i].IMAGE_SCN_MEM_EXECUTE == True:
                     enc_data = self.pe.get_data(self.pe.sections[i].VirtualAddress,length=self.pe.sections[i].SizeOfRawData)
                     self.pe.set_bytes_at_offset(self.pe.sections[i].PointerToRawData, rijndael_decrypt(self.exe_key, enc_data))
                     print("Decrypted Section %s" % self.pe.sections[i].Name.decode('utf-8'))
@@ -190,7 +190,7 @@ class LC_Enveloped_EXE(object):
         # Adjust our Import Header Offsets/Sizes
         for j in range(0, len(self.pe.OPTIONAL_HEADER.DATA_DIRECTORY)):
             cd = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[j]
-            if (cd.name is "IMAGE_DIRECTORY_ENTRY_IMPORT"):
+            if (cd.name == "IMAGE_DIRECTORY_ENTRY_IMPORT"):
                 self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[j].VirtualAddress = self.original_iat_rva
                 self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[j].Size = len(b_idt)
         return True
@@ -253,29 +253,29 @@ class LC_Enveloped_EXE(object):
         if (self.relocation_offset != 0):
             for j in range(0, len(self.pe.OPTIONAL_HEADER.DATA_DIRECTORY)):
                 cd = self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[j]
-                if (cd.name is "IMAGE_DIRECTORY_ENTRY_BASERELOC"):
+                if (cd.name == "IMAGE_DIRECTORY_ENTRY_BASERELOC"):
                     self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[j].VirtualAddress = self.relocation_offset
                     self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[j].Size = self.pe.OPTIONAL_HEADER.SizeOfImage - self.relocation_offset
         return True
 
 
     def unpack(self):
-        if self.decrypt_code_sections() is False:
+        if self.decrypt_code_sections() == False:
             return False
 
-        if self.write_import_tables() is False:
+        if self.write_import_tables() == False:
             return False
 
-        if self.restore_dll_strings() is False:
+        if self.restore_dll_strings() == False:
             return False
 
-        if self.write_thunk_tables(self.pe.sections[-1].PointerToRawData) is False:
+        if self.write_thunk_tables(self.pe.sections[-1].PointerToRawData) == False:
             return False
 
-        if self.fix_relocations() is False:
+        if self.fix_relocations() == False:
             return False
 
-        if self.fix_header() is False:
+        if self.fix_header() == False:
             return False
 
         return True
