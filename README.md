@@ -8,6 +8,7 @@ You paste the contents with right click -> Paste and CTRL+O to save, it'll ask f
 The udev rule contents are:
 
 SUBSYSTEM=="usb", ATTRS{idVendor}=="1bc0", ATTRS{idProduct}=="8101", MODE="0666"
+
 KERNEL=="hidraw*", ATTRS{busnum}=="<YOUR_BUS_NUMBER_HERE>", ATTRS{idVendor}=="1bc0", ATTRS{idProduct}=="8101", MODE="0666"
 
 Dependencies:
