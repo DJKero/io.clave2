@@ -4,7 +4,6 @@ You'll probably run with an error saying that the device can´t be opened, to fi
 You need to figure out the USB bus on which the dongle is located on and add an udev rule to "/etc/udev/rules.d/" with the name "99-usb-dongle.rules".
 
 You'll need to use a text editor with elevated privileges, I use "sudo nano" in "/etc/udev/rules.d/" to create the file.
-
 You paste the contents with right click -> Paste and CTRL+O to save, it'll ask for the file name ("99-usb-dongle.rules"), you press enter and reboot your system.
 
 The udev rule contents are:
